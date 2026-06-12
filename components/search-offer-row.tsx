@@ -1,13 +1,16 @@
-import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { FavoriteToggleButton } from "@/components/favorite-toggle-button";
 import { formatChf } from "@/lib/utils";
 import type { Offer } from "@/lib/site-data";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 type SearchOfferRowProps = {
   offer: Offer;
+  authenticated: boolean;
+  favorited: boolean;
 };
 
 function getHotelLabel(offer: Offer) {
@@ -22,14 +25,14 @@ function getStars(offer: Offer) {
   return 4.7;
 }
 
-export function SearchOfferRow({ offer }: SearchOfferRowProps) {
+export function SearchOfferRow({ offer, authenticated, favorited }: SearchOfferRowProps) {
   const stars = getStars(offer);
 
   return (
-    <Link href={`/offres/${offer.slug}`} className="group block">
-      <Card className="overflow-hidden border-fuga-border transition-shadow hover:shadow-lg">
-        <div className="flex flex-col sm:flex-row">
-          <div className="relative h-56 sm:h-auto sm:w-72 sm:shrink-0">
+    <Card className="overflow-hidden border-fuga-border transition-shadow hover:shadow-lg">
+      <div className="flex flex-col sm:flex-row">
+        <Link href={`/offres/${offer.slug}`} className="group block sm:w-72 sm:shrink-0">
+          <div className="relative h-56 sm:h-full">
             <img
               src={offer.image}
               alt={`${offer.destination}, ${offer.country}`}
@@ -48,8 +51,10 @@ export function SearchOfferRow({ offer }: SearchOfferRowProps) {
               </Badge>
             </div>
           </div>
+        </Link>
 
-          <div className="flex flex-1 flex-col justify-between gap-5 p-5 sm:p-6">
+        <div className="flex flex-1 flex-col justify-between gap-5 p-5 sm:p-6">
+          <Link href={`/offres/${offer.slug}`} className="block">
             <div className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -63,7 +68,9 @@ export function SearchOfferRow({ offer }: SearchOfferRowProps) {
                 </div>
 
                 <div className="text-right">
-                  <div className="text-xs uppercase tracking-[0.08em] text-fuga-slate">Prix dès</div>
+                  <div className="text-xs uppercase tracking-[0.08em] text-fuga-slate">
+                    Prix dès
+                  </div>
                   <div className="mt-1 font-display text-2xl font-bold text-fuga-orange">
                     {formatChf(offer.priceFrom)}
                   </div>
@@ -97,26 +104,39 @@ export function SearchOfferRow({ offer }: SearchOfferRowProps) {
                 </div>
               </div>
             </div>
+          </Link>
 
-            <div className="flex items-center justify-between border-t border-fuga-border pt-4">
-              <div className="flex flex-wrap gap-2">
-                {offer.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-fuga-offwhite px-3 py-1 text-xs font-medium text-fuga-midnight"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-fuga-orange px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform group-hover:translate-x-0.5 group-hover:bg-fuga-orange/90">
+          <div className="flex flex-col gap-4 border-t border-fuga-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              {offer.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-fuga-offwhite px-3 py-1 text-xs font-medium text-fuga-midnight"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex flex-col items-end gap-2 sm:items-end">
+              <FavoriteToggleButton
+                offerId={offer.id}
+                offerSlug={offer.slug}
+                initialFavorited={favorited}
+                authenticated={authenticated}
+                compact
+              />
+              <Link
+                href={`/offres/${offer.slug}`}
+                className="inline-flex items-center gap-2 self-end rounded-full bg-fuga-orange px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:bg-fuga-orange/90"
+              >
                 Voir l’offre
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
+                <ArrowRight className="h-4 w-4 transition-transform hover:translate-x-1" />
+              </Link>
             </div>
           </div>
         </div>
-      </Card>
-    </Link>
+      </div>
+    </Card>
   );
 }

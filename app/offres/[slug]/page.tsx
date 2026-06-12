@@ -4,7 +4,8 @@ import { BookingConfigurator } from "@/components/booking-configurator";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
-import { getOfferBySlug } from "@/lib/queries";
+import { getOfferBySlug, getUserFavorites } from "@/lib/queries";
+import { FavoriteToggleButton } from "@/components/favorite-toggle-button";
 import { formatChf } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +24,12 @@ export default async function OfferPage({ params }: OfferPageProps) {
   }
 
   const session = await auth();
+  const favoriteIds = session?.user?.id
+    ? new Set((await getUserFavorites(session.user.id)).map((favorite) => favorite.offerId))
+    : new Set<string>();
+  const includedItems = Array.from(
+    new Set(offer.plans.flatMap((plan) => plan.included).filter(Boolean))
+  );
 
   return (
     <>
@@ -76,6 +83,15 @@ export default async function OfferPage({ params }: OfferPageProps) {
                 </div>
               </div>
 
+              <div className="mt-4">
+                <FavoriteToggleButton
+                  offerId={offer.id}
+                  offerSlug={offer.slug}
+                  initialFavorited={favoriteIds.has(offer.id)}
+                  authenticated={Boolean(session?.user?.id)}
+                />
+              </div>
+
               <div className="mt-4 flex flex-wrap gap-2">
                 {offer.tags.map((tag) => (
                   <Badge key={tag}>{tag}</Badge>
@@ -94,6 +110,33 @@ export default async function OfferPage({ params }: OfferPageProps) {
                     {highlight}
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-6 rounded-3xl border border-fuga-border bg-fuga-offwhite p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.08em] text-fuga-slate">
+                      Inclus dans l’offre
+                    </div>
+                    <div className="mt-1 font-display text-lg font-bold text-fuga-midnight">
+                      Ce qui est compris
+                    </div>
+                  </div>
+                  <Badge className="border-fuga-orange bg-fuga-orange/10 text-fuga-orange">
+                    {offer.plans.length} formule(s)
+                  </Badge>
+                </div>
+
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {includedItems.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl border border-white bg-white px-4 py-3 text-sm text-fuga-midnight shadow-sm"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </Card>

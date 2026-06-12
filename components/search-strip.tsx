@@ -36,16 +36,16 @@ export function SearchStrip({
 
   const [destination, setDestination] = useState(initial.destination);
   const [dates, setDates] = useState(initial.dates);
-  const [budget, setBudget] = useState(initial.budget || "2500");
-  const budgetValue = Number(budget || "2500");
-  const budgetMin = 120;
-  const budgetMax = 5000;
+  const [budget, setBudget] = useState(initial.budget || "450");
+  const budgetValue = Number(budget || "450");
+  const budgetMin = 150;
+  const budgetMax = 750;
   const budgetPercent = ((budgetValue - budgetMin) / (budgetMax - budgetMin)) * 100;
 
   useEffect(() => {
     setDestination(initial.destination);
     setDates(initial.dates);
-    setBudget(initial.budget || "2500");
+    setBudget(initial.budget || "450");
   }, [initial.destination, initial.dates, initial.budget]);
 
   function submitSearch() {

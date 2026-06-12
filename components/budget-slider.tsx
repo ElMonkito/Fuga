@@ -6,15 +6,21 @@ import { useEffect, useState } from "react";
 
 type BudgetSliderProps = {
   defaultValue: number;
+  min?: number;
+  max?: number;
+  step?: number;
 };
 
-export function BudgetSlider({ defaultValue }: BudgetSliderProps) {
+export function BudgetSlider({
+  defaultValue,
+  min = 120,
+  max = 5000,
+  step = 10
+}: BudgetSliderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(defaultValue);
-  const min = 120;
-  const max = 5000;
   const percent = ((value - min) / (max - min)) * 100;
 
   useEffect(() => {
@@ -34,7 +40,7 @@ export function BudgetSlider({ defaultValue }: BudgetSliderProps) {
         type="range"
         min={min}
         max={max}
-        step={10}
+        step={step}
         value={value}
         onChange={(event) => {
           const nextValue = Number(event.target.value);

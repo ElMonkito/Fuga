@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { FugaLogo } from "@/components/fuga-logo";
 import { cn } from "@/lib/utils";
 
@@ -10,10 +10,6 @@ type SiteHeaderProps = {
 
 export async function SiteHeader({ overlay = false, showLogo = true }: SiteHeaderProps) {
   const session = await auth();
-  const logoutAction = async () => {
-    "use server";
-    await signOut({ redirectTo: "/" });
-  };
 
   return (
     <header
@@ -64,19 +60,6 @@ export async function SiteHeader({ overlay = false, showLogo = true }: SiteHeade
             >
               {session ? "Compte" : "Login"}
             </Link>
-            {session ? (
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className={cn(
-                    "rounded-full px-2.5 py-1.5 transition-colors",
-                    overlay ? "text-white/85 hover:text-white" : "text-fuga-slate hover:text-fuga-midnight"
-                  )}
-                >
-                  Déconnexion
-                </button>
-              </form>
-            ) : null}
           </nav>
         </div>
       </div>
