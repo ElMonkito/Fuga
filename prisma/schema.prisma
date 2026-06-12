@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BookingStatus {
+  DRAFT
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  TWINT
+  INVOICE
+  CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  firstName     String
+  lastName      String
+  email         String     @unique
+  emailVerified DateTime?
+  passwordHash  String
+  phone         String?
+  image         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  bookings      Booking[]
+  favorites     Favorite[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Offer {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  destination    String
+  country        String
+  heroIcon       String
+  title          String
+  subtitle       String
+  priceFrom      Int
+  originalPrice  Int
+  durationDays   Int
+  departureLabel String
+  dateLabel      String
+  seatsLeft      Int
+  badge          String
+  theme          String
+  summary        String    @db.Text
+  highlights     Json
+  plans          Json
+  tags           Json
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bookings       Booking[]
+  favorites      Favorite[]
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  reference      String        @unique
+  status         BookingStatus @default(PENDING_PAYMENT)
+  offerId        String
+  userId         String?
+  planId         String
+  planName       String
+  planPrice      Int
+  taxes          Int           @default(18)
+  total          Int
+  people         Int
+  rooms          Int
+  departureDate  DateTime
+  returnDate     DateTime
+  guestFirstName String?
+  guestLastName  String?
+  guestEmail     String
+  guestPhone     String?
+  paymentMethod  PaymentMethod?
+  paymentStatus  PaymentStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  offer   Offer    @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  payment Payment?
+
+  @@index([offerId])
+  @@index([userId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  bookingId    String       @unique
+  method      PaymentMethod
+  status      PaymentStatus @default(PENDING)
+  providerRef String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  offerId    String
+  createdAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, offerId])
+}
