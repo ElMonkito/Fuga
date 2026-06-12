@@ -1,10 +1,13 @@
 import { SearchStrip } from "@/components/search-strip";
 import { SiteHeader } from "@/components/site-header";
 import { BudgetSlider } from "@/components/budget-slider";
-import { OfferCard } from "@/components/offer-card";
 import { Badge } from "@/components/ui/badge";
 import { getOffers } from "@/lib/queries";
 import { Card } from "@/components/ui/card";
+import { SearchOfferRow } from "@/components/search-offer-row";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type SearchPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -19,7 +22,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const filtered = offers.filter((offer) => {
     const destinationMatch =
-      !destination || offer.destination.toLowerCase().includes(destination.toLowerCase());
+      !destination ||
+      offer.destination.toLowerCase().includes(destination.toLowerCase()) ||
+      offer.country.toLowerCase().includes(destination.toLowerCase());
     const budgetMatch = !budget || offer.priceFrom <= budget;
     return destinationMatch && budgetMatch;
   });
@@ -35,7 +40,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             defaultDates={dates}
             defaultBudget={String(budget || "")}
           />
-          <BudgetSlider defaultValue={budget || 2500} />
           <div className="flex flex-wrap gap-2">
             <Badge className="border-fuga-orange bg-fuga-orange/10 text-fuga-orange">Tous</Badge>
             <Badge>Ce weekend</Badge>
@@ -56,10 +60,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="text-xs uppercase tracking-[0.08em] text-fuga-slate">Départ</div>
                 <div className="mt-1">{dates || "N’importe quand"}</div>
               </div>
-              <div className="rounded-2xl border border-fuga-border bg-white p-4">
-                <div className="text-xs uppercase tracking-[0.08em] text-fuga-slate">Budget</div>
-                <div className="mt-1">{budget} CHF</div>
-              </div>
+              <BudgetSlider defaultValue={budget || 2500} />
             </div>
           </Card>
 
@@ -73,9 +74,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-4">
               {filtered.map((offer) => (
-                <OfferCard key={offer.slug} offer={offer} />
+                <SearchOfferRow key={offer.slug} offer={offer} />
               ))}
             </div>
           </div>

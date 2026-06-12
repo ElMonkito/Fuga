@@ -3,12 +3,14 @@ import { prisma } from "@/lib/db";
 import { paySchema } from "@/lib/validators";
 import { generateBookingReference } from "@/lib/utils";
 
-type Params = {
-  params: { bookingId: string } | Promise<{ bookingId: string }>;
+export const runtime = "nodejs";
+
+type RouteContext = {
+  params: Promise<{ bookingId: string }>;
 };
 
-export async function POST(request: Request, { params }: Params) {
-  const { bookingId } = await Promise.resolve(params);
+export async function POST(request: Request, { params }: RouteContext) {
+  const { bookingId } = await params;
   const body = await request.json().catch(() => null);
   const parsed = paySchema.safeParse(body);
 

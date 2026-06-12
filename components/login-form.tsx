@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Route } from "next";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function LoginForm({ nextPath = "/compte" }: LoginFormProps) {
         return;
       }
 
-      router.push(params.get("next") ?? nextPath);
+      router.push((params.get("next") ?? nextPath) as Route);
       router.refresh();
     });
   }

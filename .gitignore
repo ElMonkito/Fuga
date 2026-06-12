@@ -1,5 +1,7 @@
 .next
 node_modules
+.generated
+generated
 .env
 .env.local
 .env.development.local

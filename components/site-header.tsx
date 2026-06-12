@@ -1,34 +1,82 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
+import { FugaLogo } from "@/components/fuga-logo";
 import { cn } from "@/lib/utils";
 
-export async function SiteHeader() {
+type SiteHeaderProps = {
+  overlay?: boolean;
+  showLogo?: boolean;
+};
+
+export async function SiteHeader({ overlay = false, showLogo = true }: SiteHeaderProps) {
   const session = await auth();
+  const logoutAction = async () => {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-fuga-border bg-fuga-offwhite/95 backdrop-blur-sm">
+    <header
+      className={cn(
+        "z-40 border-b backdrop-blur-sm",
+        overlay
+          ? "absolute inset-x-0 top-0 border-transparent bg-transparent shadow-none"
+          : "sticky top-0 border-fuga-border bg-fuga-offwhite/95"
+      )}
+    >
       <div className="page-shell">
-        <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="font-display text-lg font-bold tracking-[0.08em] text-fuga-orange">
-            FUGA
-          </Link>
+        <div className="flex min-h-14 items-center justify-between gap-3 py-1.5">
+          {showLogo ? (
+            <Link href="/" className="block w-[96px] sm:w-[124px]">
+              <FugaLogo imageClassName="h-auto w-full" />
+            </Link>
+          ) : (
+            <div className="w-[96px] sm:w-[124px]" aria-hidden="true" />
+          )}
 
-          <nav className="flex items-center gap-2 text-sm">
+          <nav
+            className={cn(
+              "flex items-center gap-1.5 text-xs sm:text-sm leading-none",
+              overlay ? "text-white" : "text-fuga-slate"
+            )}
+          >
             <Link
               href="/recherche"
-              className="rounded-full px-3 py-2 text-fuga-slate transition-colors hover:text-fuga-midnight"
+              className={cn(
+                "rounded-full px-2.5 py-1.5 transition-colors",
+                overlay ? "text-white/85 hover:text-white" : "text-fuga-slate hover:text-fuga-midnight"
+              )}
             >
               Recherche
             </Link>
             <Link
               href={session ? "/compte" : "/login"}
               className={cn(
-                "rounded-full px-3 py-2 transition-colors",
-                session ? "text-fuga-midnight" : "text-fuga-slate hover:text-fuga-midnight"
+                "rounded-full px-2.5 py-1.5 transition-colors",
+                overlay
+                  ? session
+                    ? "text-white"
+                    : "text-white/85 hover:text-white"
+                  : session
+                    ? "text-fuga-midnight"
+                    : "text-fuga-slate hover:text-fuga-midnight"
               )}
             >
               {session ? "Compte" : "Login"}
             </Link>
+            {session ? (
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className={cn(
+                    "rounded-full px-2.5 py-1.5 transition-colors",
+                    overlay ? "text-white/85 hover:text-white" : "text-fuga-slate hover:text-fuga-midnight"
+                  )}
+                >
+                  Déconnexion
+                </button>
+              </form>
+            ) : null}
           </nav>
         </div>
       </div>

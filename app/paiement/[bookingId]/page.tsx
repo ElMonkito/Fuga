@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { getBookingById } from "@/lib/queries";
 import { formatChf } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 type PaymentPageProps = {
   params: Promise<{ bookingId: string }>;
 };

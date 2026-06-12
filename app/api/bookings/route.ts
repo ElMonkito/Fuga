@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { bookingSchema } from "@/lib/validators";
 import { generateBookingReference } from "@/lib/utils";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   const session = await auth();
   const body = await request.json().catch(() => null);

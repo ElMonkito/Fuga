@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
-import type { Offer, OfferPlan } from "@/lib/site-data";
-import type { Offer as PrismaOffer, Prisma } from "@prisma/client";
+import { getOfferImage, offers as siteOffers, type Offer, type OfferPlan } from "@/lib/site-data";
+import type { Offer as PrismaOffer, Prisma } from "@/generated/prisma/client";
 
 type OfferRecord = PrismaOffer;
+
+const siteOffersBySlug = new Map(siteOffers.map((offer) => [offer.slug, offer]));
 
 function parsePlans(value: Prisma.JsonValue): OfferPlan[] {
   return Array.isArray(value) ? (value as OfferPlan[]) : [];
@@ -13,6 +15,8 @@ function parseStrings(value: Prisma.JsonValue): string[] {
 }
 
 export function toSiteOffer(record: OfferRecord): Offer {
+  const siteOffer = siteOffersBySlug.get(record.slug);
+
   return {
     id: record.id,
     slug: record.slug,
@@ -32,7 +36,8 @@ export function toSiteOffer(record: OfferRecord): Offer {
     summary: record.summary,
     highlights: parseStrings(record.highlights),
     plans: parsePlans(record.plans),
-    tags: parseStrings(record.tags)
+    tags: parseStrings(record.tags),
+    image: siteOffer?.image ?? getOfferImage(record.slug)
   };
 }
 

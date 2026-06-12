@@ -7,6 +7,9 @@ import { auth } from "@/lib/auth";
 import { getOfferBySlug } from "@/lib/queries";
 import { formatChf } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 type OfferPageProps = {
   params: Promise<{ slug: string }>;
 };
@@ -27,15 +30,36 @@ export default async function OfferPage({ params }: OfferPageProps) {
       <main className="page-shell py-6 sm:py-8">
         <section className="grid gap-6 xl:grid-cols-2">
           <Card className="overflow-hidden">
-            <div className="flex h-28 items-end bg-fuga-midnight px-5 py-4 text-fuga-offwhite">
-              <div className="h-12 w-12 rounded-full border border-white/10 bg-white/5" />
+            <div className="relative h-72 overflow-hidden">
+              <img
+                src={offer.image}
+                alt={`${offer.destination}, ${offer.country}`}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+              <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/90">
+                {offer.country}
+              </div>
+              <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-3 text-white">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.12em] text-white/75">
+                    {offer.dateLabel}
+                  </div>
+                  <div className="mt-1 font-display text-3xl font-bold leading-none">
+                    {offer.title}
+                  </div>
+                  <div className="mt-1 text-sm text-white/75">
+                    {offer.destination} · {offer.country}
+                  </div>
+                </div>
+                <div className="rounded-full border border-white/15 bg-black/20 px-3 py-2 text-xs font-medium">
+                  {offer.departureLabel}
+                </div>
+              </div>
             </div>
             <div className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="font-display text-2xl font-bold text-fuga-midnight">
-                    {offer.destination}
-                  </div>
                   <div className="mt-1 text-sm text-fuga-slate">{offer.subtitle}</div>
                 </div>
                 <Badge className="border-fuga-orange bg-fuga-orange/10 text-fuga-orange">

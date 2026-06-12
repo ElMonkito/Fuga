@@ -2,10 +2,11 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import NextAuth from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import { prisma } from "@/lib/db";
 import { loginSchema } from "@/lib/validators";
 
-export const { handlers, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt"
@@ -51,16 +52,18 @@ export const { handlers, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
+        token.firstName = typeof user.firstName === "string" ? user.firstName : null;
+        token.lastName = typeof user.lastName === "string" ? user.lastName : null;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.firstName = token.firstName ?? null;
-        session.user.lastName = token.lastName ?? null;
+        session.user.firstName =
+          typeof (token as JWT).firstName === "string" ? (token as JWT).firstName : null;
+        session.user.lastName =
+          typeof (token as JWT).lastName === "string" ? (token as JWT).lastName : null;
       }
       return session;
     }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatChf } from "@/lib/utils";
-import type { Booking, Favorite, Offer, User } from "@prisma/client";
+import type { Booking, Favorite, Offer, User } from "@/generated/prisma/client";
 import { Badge } from "@/components/ui/badge";
 
 type BookingSummary = Booking & { offer: Offer };

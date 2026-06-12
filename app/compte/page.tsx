@@ -2,12 +2,19 @@ import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { AccountOverview } from "@/components/account-overview";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { getUserBookings, getUserFavorites } from "@/lib/queries";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default async function AccountPage() {
   const session = await auth();
+  const logoutAction = async () => {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  };
 
   if (!session?.user?.id) {
     return (
@@ -49,6 +56,13 @@ export default async function AccountPage() {
     <>
       <SiteHeader />
       <main className="page-shell py-6 sm:py-8">
+        <div className="mb-4 flex justify-end">
+          <form action={logoutAction}>
+            <Button type="submit" variant="outline">
+              Se déconnecter
+            </Button>
+          </form>
+        </div>
         <AccountOverview user={user} bookings={bookings} favorites={favorites} />
       </main>
     </>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { toSiteOffer } from "@/lib/queries";
 
+export const runtime = "nodejs";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const destination = searchParams.get("destination")?.toLowerCase() ?? "";
@@ -15,7 +17,10 @@ export async function GET(request: Request) {
   const filtered = records
     .map(toSiteOffer)
     .filter((offer) => {
-      const destinationMatch = !destination || offer.destination.toLowerCase().includes(destination);
+      const destinationMatch =
+        !destination ||
+        offer.destination.toLowerCase().includes(destination) ||
+        offer.country.toLowerCase().includes(destination);
       const budgetMatch = !budget || offer.priceFrom <= budget;
       const flashMatch = !flashOnly || offer.badge === "Flash";
       return destinationMatch && budgetMatch && flashMatch;

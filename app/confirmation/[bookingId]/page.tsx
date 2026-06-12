@@ -6,6 +6,9 @@ import { getBookingById } from "@/lib/queries";
 import { formatChf } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 type ConfirmationPageProps = {
   params: Promise<{ bookingId: string }>;
 };

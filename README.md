@@ -28,20 +28,26 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Create the database schema and generate the Prisma client.
+3. Start PostgreSQL locally.
+
+```bash
+docker compose up -d db
+```
+
+4. Create the database schema and generate the Prisma client.
 
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-4. Seed the demo content.
+5. Seed the demo content.
 
 ```bash
 npm run prisma:seed
 ```
 
-5. Start the app.
+6. Start the app.
 
 ```bash
 npm run dev
@@ -65,6 +71,8 @@ npm run dev
 
 ## Notes
 
+- Prisma 7 uses `prisma.config.ts` plus the ESM-first generated client in `generated/prisma`.
 - The booking flow uses Prisma-backed API routes.
 - Payment is a simulated flow that always confirms successfully after validation.
 - The visuals are intentionally faithful to the provided wireframes and brand tokens.
+- If Prisma reports `localhost:5432` is unreachable, the database container is not running yet.
