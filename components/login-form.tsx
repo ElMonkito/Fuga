@@ -27,19 +27,37 @@ export function LoginForm({ nextPath = "/compte" }: LoginFormProps) {
   function onSubmit(values: LoginInput) {
     setServerError(null);
     startTransition(async () => {
-      const result = await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        redirect: false
-      });
+      try {
+        const result = await signIn("credentials", {
+          email: values.email,
+          password: values.password,
+          redirect: false
+        });
 
-      if (result?.error) {
-        setServerError("Identifiants invalides");
-        return;
+        if (!result) {
+          setServerError("Le serveur d'authentification ne répond pas.");
+          return;
+        }
+
+        if (result.error) {
+          setServerError(
+            result.error === "Configuration"
+              ? "Authentification mal configurée en production. Vérifie AUTH_SECRET et AUTH_URL sur Vercel."
+              : "Identifiants invalides"
+          );
+          return;
+        }
+
+        if (!result.ok) {
+          setServerError("Connexion impossible pour le moment.");
+          return;
+        }
+
+        router.push((params.get("next") ?? nextPath) as Route);
+        router.refresh();
+      } catch {
+        setServerError("Erreur réseau ou configuration Auth.js côté serveur.");
       }
-
-      router.push((params.get("next") ?? nextPath) as Route);
-      router.refresh();
     });
   }
 
