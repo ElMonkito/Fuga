@@ -67,8 +67,8 @@ type VariantBlueprint = {
 export const primaryTagline = "Partis en moins de cinq minutes.";
 export const secondaryTagline = "L'escapade qui n'attendait que toi.";
 
-function unsplashImage(photoId: string) {
-  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=1200&q=80`;
+function unsplashImage(photoId: string, width = 1800, height = 1200) {
+  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&h=${height}&q=92&fm=webp&crop=entropy`;
 }
 
 const offerImages = {

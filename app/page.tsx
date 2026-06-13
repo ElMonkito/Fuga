@@ -4,7 +4,7 @@ import type { CountryTile } from "@/components/country-explorer";
 import { offers, primaryTagline, secondaryTagline } from "@/lib/site-data";
 
 const heroImage =
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80";
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&h=1400&q=92&fm=webp&crop=entropy";
 
 const countryKeywords: Record<string, string[]> = {
   Portugal: ["Ville", "Nature", "Culture"],

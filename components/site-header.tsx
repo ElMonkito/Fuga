@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { FugaLogo } from "@/components/fuga-logo";
+import { UserMenu } from "@/components/user-menu";
 import { cn } from "@/lib/utils";
 
 type SiteHeaderProps = {
@@ -45,21 +46,7 @@ export async function SiteHeader({ overlay = false, showLogo = true }: SiteHeade
             >
               Recherche
             </Link>
-            <Link
-              href={session ? "/compte" : "/login"}
-              className={cn(
-                "rounded-full px-2.5 py-1.5 transition-colors",
-                overlay
-                  ? session
-                    ? "text-white"
-                    : "text-white/85 hover:text-white"
-                  : session
-                    ? "text-fuga-midnight"
-                    : "text-fuga-slate hover:text-fuga-midnight"
-              )}
-            >
-              {session ? "Compte" : "Login"}
-            </Link>
+            <UserMenu session={session} overlay={overlay} />
           </nav>
         </div>
       </div>
