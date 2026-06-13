@@ -19,7 +19,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const destination = typeof params.destination === "string" ? params.destination : "";
   const rawBudget = typeof params.budget === "string" ? Number(params.budget) : 450;
   const budget = Number.isFinite(rawBudget) ? Math.min(Math.max(rawBudget, 150), 750) : 450;
-  const dates = typeof params.dates === "string" ? params.dates : "";
+  const departureDate = typeof params.departureDate === "string" ? params.departureDate : "";
+  const returnDate = typeof params.returnDate === "string" ? params.returnDate : "";
   const country = typeof params.country === "string" ? params.country : "";
   const departure = typeof params.departure === "string" ? params.departure : "";
   const badge = typeof params.badge === "string" ? params.badge : "";
@@ -40,6 +41,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const tags = [...new Set(offers.flatMap((offer) => offer.tags))].sort((a, b) =>
     a.localeCompare(b)
   );
+  const preservedQuery = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (typeof value === "string" && value.length) {
+      preservedQuery.set(key, value);
+    }
+  });
 
   const filtered = offers.filter((offer) => {
     const destinationMatch =
@@ -75,7 +82,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <SearchStrip
             variant="bar"
             defaultDestination={destination}
-            defaultDates={dates}
+            defaultDepartureDate={departureDate}
+            defaultReturnDate={returnDate}
             defaultBudget={String(budget || "")}
           />
           <div className="flex flex-wrap gap-2">
@@ -101,7 +109,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   {filtered.length} offre(s) disponible(s)
                 </h1>
                 <div className="mt-2 text-sm text-fuga-slate">
-                  {dates || country || badge || departure || tag || duration || seats
+                  {departureDate || returnDate || country || badge || departure || tag || duration || seats
                     ? "Tes filtres sont actifs et la liste s’ajuste en temps réel."
                     : "Aucun filtre avancé n’est actif pour l’instant."}
                 </div>
@@ -116,6 +124,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     offer={offer}
                     authenticated={Boolean(session?.user?.id)}
                     favorited={favoriteIds.has(offer.id)}
+                    queryString={preservedQuery.toString()}
                   />
                 ))
               ) : (

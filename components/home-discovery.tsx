@@ -71,6 +71,7 @@ export function HomeDiscovery({ heroImage, tagline, subtitle, countries }: HomeD
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Tape: plage, ville, Espagne, culture..."
+                  aria-label="Recherche de pays"
                   className="h-auto w-full border-0 bg-transparent px-0 text-base text-fuga-midnight placeholder:text-fuga-slate/70 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </label>

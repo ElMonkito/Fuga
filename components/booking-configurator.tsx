@@ -4,11 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { CalendarDays, ChevronDown, Users, BedDouble } from "lucide-react";
+import { Users, BedDouble } from "lucide-react";
 import type { Offer, OfferPlan } from "@/lib/site-data";
 import { bookingSchema, type BookingInput } from "@/lib/validators";
 import { Button } from "@/components/ui/button";
 import { cn, formatChf } from "@/lib/utils";
+import { DatePickerField } from "@/components/date-picker-field";
 
 type BookingConfiguratorProps = {
   offer: Offer;
@@ -18,9 +19,16 @@ type BookingConfiguratorProps = {
     email?: string;
     phone?: string;
   };
+  initialDepartureDate?: string;
+  initialReturnDate?: string;
 };
 
-export function BookingConfigurator({ offer, guest }: BookingConfiguratorProps) {
+export function BookingConfigurator({
+  offer,
+  guest,
+  initialDepartureDate = "",
+  initialReturnDate = ""
+}: BookingConfiguratorProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [selectedPlanId, setSelectedPlanId] = useState(offer.plans[0]?.id ?? "scholar");
@@ -39,14 +47,15 @@ export function BookingConfigurator({ offer, guest }: BookingConfiguratorProps) 
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors }
   } = useForm<BookingInput>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       offerSlug: offer.slug,
       planId: selectedPlanId,
-      departureDate: "",
-      returnDate: "",
+      departureDate: initialDepartureDate,
+      returnDate: initialReturnDate,
       people: 2,
       rooms: 1,
       guestFirstName: guest?.firstName ?? "",
@@ -55,10 +64,23 @@ export function BookingConfigurator({ offer, guest }: BookingConfiguratorProps) 
       guestPhone: guest?.phone ?? ""
     }
   });
+  const departureDate = watch("departureDate");
+  const returnDate = watch("returnDate");
 
   function selectPlan(planId: string) {
     setSelectedPlanId(planId);
     setValue("planId", planId);
+  }
+
+  function updateDepartureDate(nextValue: string) {
+    setValue("departureDate", nextValue, { shouldValidate: true, shouldDirty: true });
+    if (returnDate && nextValue && returnDate < nextValue) {
+      setValue("returnDate", "", { shouldValidate: true, shouldDirty: true });
+    }
+  }
+
+  function updateReturnDate(nextValue: string) {
+    setValue("returnDate", nextValue, { shouldValidate: true, shouldDirty: true });
   }
 
   function onSubmit(values: BookingInput) {
@@ -91,15 +113,11 @@ export function BookingConfigurator({ offer, guest }: BookingConfiguratorProps) 
           <span className="text-xs font-medium uppercase tracking-[0.06em] text-fuga-slate">
             Départ
           </span>
-          <div className="brand-field flex items-center gap-2 px-3">
-            <CalendarDays className="h-4 w-4 text-fuga-slate" />
-            <input
-              type="date"
-              className="h-11 w-full bg-transparent outline-none"
-              {...register("departureDate")}
-            />
-            <ChevronDown className="h-4 w-4 text-fuga-slate" />
-          </div>
+          <DatePickerField
+            value={departureDate}
+            onChange={updateDepartureDate}
+            placeholder="Choisir une date de départ"
+          />
           {errors.departureDate ? (
             <p className="text-xs text-red-600">{errors.departureDate.message}</p>
           ) : null}
@@ -108,15 +126,12 @@ export function BookingConfigurator({ offer, guest }: BookingConfiguratorProps) 
           <span className="text-xs font-medium uppercase tracking-[0.06em] text-fuga-slate">
             Retour
           </span>
-          <div className="brand-field flex items-center gap-2 px-3">
-            <CalendarDays className="h-4 w-4 text-fuga-slate" />
-            <input
-              type="date"
-              className="h-11 w-full bg-transparent outline-none"
-              {...register("returnDate")}
-            />
-            <ChevronDown className="h-4 w-4 text-fuga-slate" />
-          </div>
+          <DatePickerField
+            value={returnDate}
+            onChange={updateReturnDate}
+            placeholder="Choisir une date de retour"
+            minDate={departureDate || undefined}
+          />
           {errors.returnDate ? <p className="text-xs text-red-600">{errors.returnDate.message}</p> : null}
         </label>
       </div>

@@ -1,18 +1,19 @@
 "use client";
 
-import { Search, CalendarDays, Coins } from "lucide-react";
+import { Search, Coins } from "lucide-react";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { DateRangePickerField } from "@/components/date-range-picker-field";
 
 type SearchStripProps = {
   variant?: "hero" | "bar";
   className?: string;
   defaultDestination?: string;
-  defaultDates?: string;
+  defaultDepartureDate?: string;
+  defaultReturnDate?: string;
   defaultBudget?: string;
 };
 
@@ -20,7 +21,8 @@ export function SearchStrip({
   variant = "bar",
   className,
   defaultDestination = "",
-  defaultDates = "",
+  defaultDepartureDate = "",
+  defaultReturnDate = "",
   defaultBudget = ""
 }: SearchStripProps) {
   const router = useRouter();
@@ -28,14 +30,16 @@ export function SearchStrip({
   const initial = useMemo(
     () => ({
       destination: params.get("destination") ?? defaultDestination,
-      dates: params.get("dates") ?? defaultDates,
+      departureDate: params.get("departureDate") ?? defaultDepartureDate,
+      returnDate: params.get("returnDate") ?? defaultReturnDate,
       budget: params.get("budget") ?? defaultBudget
     }),
-    [params, defaultBudget, defaultDates, defaultDestination]
+    [params, defaultBudget, defaultDepartureDate, defaultDestination, defaultReturnDate]
   );
 
   const [destination, setDestination] = useState(initial.destination);
-  const [dates, setDates] = useState(initial.dates);
+  const [departureDate, setDepartureDate] = useState(initial.departureDate);
+  const [returnDate, setReturnDate] = useState(initial.returnDate);
   const [budget, setBudget] = useState(initial.budget || "450");
   const budgetValue = Number(budget || "450");
   const budgetMin = 150;
@@ -44,14 +48,23 @@ export function SearchStrip({
 
   useEffect(() => {
     setDestination(initial.destination);
-    setDates(initial.dates);
+    setDepartureDate(initial.departureDate);
+    setReturnDate(initial.returnDate);
     setBudget(initial.budget || "450");
-  }, [initial.destination, initial.dates, initial.budget]);
+  }, [initial.destination, initial.departureDate, initial.returnDate, initial.budget]);
+
+  function updateDepartureDate(nextValue: string) {
+    setDepartureDate(nextValue);
+    if (returnDate && nextValue && returnDate < nextValue) {
+      setReturnDate("");
+    }
+  }
 
   function submitSearch() {
     const search = new URLSearchParams();
     if (destination) search.set("destination", destination);
-    if (dates) search.set("dates", dates);
+    if (departureDate) search.set("departureDate", departureDate);
+    if (returnDate) search.set("returnDate", returnDate);
     if (budget) search.set("budget", budget);
     router.push((`/recherche${search.toString() ? `?${search.toString()}` : ""}` as Route));
   }
@@ -60,25 +73,34 @@ export function SearchStrip({
 
   return (
     <div className={cn("w-full rounded-2xl border border-fuga-border bg-white", className)}>
-      <div className={cn("grid gap-px overflow-hidden rounded-2xl", isHero ? "md:grid-cols-[1fr_1fr_1fr_auto]" : "md:grid-cols-[1fr_1fr_1fr_auto]")}>
+      <div
+        className={cn(
+          "grid gap-px overflow-visible rounded-2xl",
+          isHero ? "md:grid-cols-[1fr_1fr_1fr_auto]" : "md:grid-cols-[1fr_1fr_1fr_auto]"
+        )}
+      >
         <label className="flex items-center gap-2 border-b border-fuga-border px-4 py-3 text-sm text-fuga-slate md:border-b-0 md:border-r">
           <Search className="h-4 w-4 shrink-0" />
-          <Input
-            value={destination}
-            onChange={(event) => setDestination(event.target.value)}
-            placeholder="Destination"
-            className="h-auto border-0 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            <input
+              value={destination}
+              onChange={(event) => setDestination(event.target.value)}
+              placeholder="Destination"
+              aria-label="Destination"
+              className="h-auto w-full border-0 bg-transparent px-0 focus-visible:outline-none"
+            />
+          </label>
+        <div className="border-b border-fuga-border px-3 py-2 text-sm text-fuga-slate md:border-b-0 md:border-r">
+          <DateRangePickerField
+            departureDate={departureDate}
+            returnDate={returnDate}
+            onChange={({ departureDate: nextDepartureDate, returnDate: nextReturnDate }) => {
+              updateDepartureDate(nextDepartureDate);
+              setReturnDate(nextReturnDate);
+            }}
+            placeholder="Départ - Retour"
+            minDate={undefined}
           />
-        </label>
-        <label className="flex items-center gap-2 border-b border-fuga-border px-4 py-3 text-sm text-fuga-slate md:border-b-0 md:border-r">
-          <CalendarDays className="h-4 w-4 shrink-0" />
-          <Input
-            value={dates}
-            onChange={(event) => setDates(event.target.value)}
-            placeholder="Dates"
-            className="h-auto border-0 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-        </label>
+        </div>
         <label className="flex items-center gap-3 border-b border-fuga-border px-4 py-3 text-sm text-fuga-slate md:border-b-0 md:border-r">
           <Coins className="h-4 w-4 shrink-0" />
           <div className="flex min-w-0 flex-1 items-center gap-3">

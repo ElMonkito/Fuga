@@ -102,6 +102,7 @@ export function AdvancedSearchFilters({
             Pays
           </span>
           <select
+            aria-label="Pays"
             value={selectedCountry}
             onChange={(event) => updateParam("country", event.target.value)}
             className="h-11 w-full rounded-2xl border border-fuga-border bg-white px-3 text-sm text-fuga-midnight outline-none transition-colors focus:border-fuga-orange"
@@ -120,6 +121,7 @@ export function AdvancedSearchFilters({
             Départ
           </span>
           <select
+            aria-label="Départ"
             value={selectedDeparture}
             onChange={(event) => updateParam("departure", event.target.value)}
             className="h-11 w-full rounded-2xl border border-fuga-border bg-white px-3 text-sm text-fuga-midnight outline-none transition-colors focus:border-fuga-orange"
@@ -138,6 +140,7 @@ export function AdvancedSearchFilters({
             Badge
           </span>
           <select
+            aria-label="Badge"
             value={selectedBadge}
             onChange={(event) => updateParam("badge", event.target.value)}
             className="h-11 w-full rounded-2xl border border-fuga-border bg-white px-3 text-sm text-fuga-midnight outline-none transition-colors focus:border-fuga-orange"
@@ -167,6 +170,7 @@ export function AdvancedSearchFilters({
             Durée
           </span>
           <select
+            aria-label="Durée"
             value={selectedDuration}
             onChange={(event) => updateParam("duration", event.target.value)}
             className="h-11 w-full rounded-2xl border border-fuga-border bg-white px-3 text-sm text-fuga-midnight outline-none transition-colors focus:border-fuga-orange"
@@ -184,6 +188,7 @@ export function AdvancedSearchFilters({
             Places dispo
           </span>
           <select
+            aria-label="Places disponibles"
             value={selectedSeats}
             onChange={(event) => updateParam("seats", event.target.value)}
             className="h-11 w-full rounded-2xl border border-fuga-border bg-white px-3 text-sm text-fuga-midnight outline-none transition-colors focus:border-fuga-orange"

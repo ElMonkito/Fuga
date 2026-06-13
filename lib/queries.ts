@@ -5,6 +5,54 @@ import type { Offer as PrismaOffer, Prisma } from "@/generated/prisma/client";
 type OfferRecord = PrismaOffer;
 
 const siteOffersBySlug = new Map(siteOffers.map((offer) => [offer.slug, offer]));
+const OFFER_QUERY_TIMEOUT_MS = 2_500;
+const allowStaticOfferFallback =
+  process.env.NODE_ENV !== "production" || process.env.ALLOW_STATIC_OFFER_FALLBACK === "true";
+
+function sortOffers<T extends { priceFrom: number; seatsLeft: number }>(offers: T[]) {
+  return [...offers].sort((left, right) => {
+    if (left.priceFrom !== right.priceFrom) {
+      return left.priceFrom - right.priceFrom;
+    }
+
+    return right.seatsLeft - left.seatsLeft;
+  });
+}
+
+function fallbackOffers() {
+  return sortOffers(siteOffers);
+}
+
+function isRecoverableOfferError(error: unknown) {
+  if (!allowStaticOfferFallback) {
+    return false;
+  }
+
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    error.name.includes("Prisma") ||
+    error.message.includes("OFFER_QUERY_TIMEOUT") ||
+    error.message.includes("prisma.offer") ||
+    error.message.includes("ETIMEDOUT") ||
+    error.message.includes("Can't reach database server")
+  );
+}
+
+async function withOfferQueryTimeout<T>(promise: Promise<T>) {
+  return Promise.race<T>([
+    promise,
+    new Promise<T>((_, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error("OFFER_QUERY_TIMEOUT"));
+      }, OFFER_QUERY_TIMEOUT_MS);
+
+      promise.finally(() => clearTimeout(timeoutId)).catch(() => clearTimeout(timeoutId));
+    })
+  ]);
+}
 
 function parsePlans(value: Prisma.JsonValue): OfferPlan[] {
   return Array.isArray(value) ? (value as OfferPlan[]) : [];
@@ -42,15 +90,35 @@ export function toSiteOffer(record: OfferRecord): Offer {
 }
 
 export async function getOffers() {
-  const records = await prisma.offer.findMany({
-    orderBy: [{ priceFrom: "asc" }, { seatsLeft: "desc" }]
-  });
-  return records.map(toSiteOffer);
+  try {
+    const records = await withOfferQueryTimeout(
+      prisma.offer.findMany({
+        orderBy: [{ priceFrom: "asc" }, { seatsLeft: "desc" }]
+      })
+    );
+    return records.map(toSiteOffer);
+  } catch (error) {
+    if (!isRecoverableOfferError(error)) {
+      throw error;
+    }
+
+    console.warn("Falling back to static offers because Prisma is unavailable.");
+    return fallbackOffers();
+  }
 }
 
 export async function getOfferBySlug(slug: string) {
-  const record = await prisma.offer.findUnique({ where: { slug } });
-  return record ? toSiteOffer(record) : null;
+  try {
+    const record = await withOfferQueryTimeout(prisma.offer.findUnique({ where: { slug } }));
+    return record ? toSiteOffer(record) : null;
+  } catch (error) {
+    if (!isRecoverableOfferError(error)) {
+      throw error;
+    }
+
+    console.warn(`Falling back to static offer for slug "${slug}" because Prisma is unavailable.`);
+    return siteOffersBySlug.get(slug) ?? null;
+  }
 }
 
 export async function getOfferRecordBySlug(slug: string) {
@@ -58,8 +126,17 @@ export async function getOfferRecordBySlug(slug: string) {
 }
 
 export async function getOfferById(id: string) {
-  const record = await prisma.offer.findUnique({ where: { id } });
-  return record ? toSiteOffer(record) : null;
+  try {
+    const record = await withOfferQueryTimeout(prisma.offer.findUnique({ where: { id } }));
+    return record ? toSiteOffer(record) : null;
+  } catch (error) {
+    if (!isRecoverableOfferError(error)) {
+      throw error;
+    }
+
+    console.warn(`Falling back to static offer for id "${id}" because Prisma is unavailable.`);
+    return siteOffers.find((offer) => offer.id === id) ?? null;
+  }
 }
 
 export async function getBookingById(id: string) {

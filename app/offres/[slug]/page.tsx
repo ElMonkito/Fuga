@@ -6,17 +6,19 @@ import { Card } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { getOfferBySlug, getUserFavorites } from "@/lib/queries";
 import { FavoriteToggleButton } from "@/components/favorite-toggle-button";
-import { formatChf } from "@/lib/utils";
+import { formatChf, formatDateLabel } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type OfferPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function OfferPage({ params }: OfferPageProps) {
+export default async function OfferPage({ params, searchParams }: OfferPageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   const offer = await getOfferBySlug(slug);
 
   if (!offer) {
@@ -27,6 +29,12 @@ export default async function OfferPage({ params }: OfferPageProps) {
   const favoriteIds = session?.user?.id
     ? new Set((await getUserFavorites(session.user.id)).map((favorite) => favorite.offerId))
     : new Set<string>();
+  const initialDepartureDate = typeof query.departureDate === "string" ? query.departureDate : "";
+  const initialReturnDate = typeof query.returnDate === "string" ? query.returnDate : "";
+  const selectedDates =
+    initialDepartureDate && initialReturnDate
+      ? `${formatDateLabel(initialDepartureDate)} → ${formatDateLabel(initialReturnDate)}`
+      : "";
   const includedItems = Array.from(
     new Set(offer.plans.flatMap((plan) => plan.included).filter(Boolean))
   );
@@ -82,6 +90,12 @@ export default async function OfferPage({ params }: OfferPageProps) {
                   {formatChf(offer.originalPrice)}
                 </div>
               </div>
+
+              {selectedDates ? (
+                <div className="mt-4 rounded-2xl border border-fuga-border bg-fuga-offwhite px-4 py-3 text-sm text-fuga-midnight">
+                  Dates sélectionnées: <span className="font-semibold">{selectedDates}</span>
+                </div>
+              ) : null}
 
               <div className="mt-4">
                 <FavoriteToggleButton
@@ -150,8 +164,10 @@ export default async function OfferPage({ params }: OfferPageProps) {
                 </div>
               </div>
             </div>
-            <BookingConfigurator
+              <BookingConfigurator
               offer={offer}
+              initialDepartureDate={initialDepartureDate}
+              initialReturnDate={initialReturnDate}
               guest={
                 session?.user
                   ? {

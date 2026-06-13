@@ -17,6 +17,7 @@ export function CountryExplorer({ countries }: { countries: CountryTile[] }) {
         <Link
           key={country.name}
           href={`/recherche?destination=${encodeURIComponent(country.name)}`}
+          data-testid="country-tile"
           className="group overflow-hidden rounded-[1.5rem] border border-fuga-border bg-white transition-transform hover:-translate-y-0.5"
         >
           <div className="relative h-44 overflow-hidden">

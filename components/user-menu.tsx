@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import type { Session } from "next-auth";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, UserRound } from "lucide-react";
 import type { Route } from "next";
 import { cn } from "@/lib/utils";
 
 type UserMenuProps = {
-  session: Awaited<ReturnType<typeof import("@/lib/auth").auth>>;
+  session: Session | null;
   overlay?: boolean;
 };
 

@@ -6,11 +6,13 @@ import { formatChf } from "@/lib/utils";
 import type { Offer } from "@/lib/site-data";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import type { Route } from "next";
 
 type SearchOfferRowProps = {
   offer: Offer;
   authenticated: boolean;
   favorited: boolean;
+  queryString?: string;
 };
 
 function getHotelLabel(offer: Offer) {
@@ -25,13 +27,17 @@ function getStars(offer: Offer) {
   return 4.7;
 }
 
-export function SearchOfferRow({ offer, authenticated, favorited }: SearchOfferRowProps) {
+export function SearchOfferRow({ offer, authenticated, favorited, queryString = "" }: SearchOfferRowProps) {
   const stars = getStars(offer);
+  const offerHref = `/offres/${offer.slug}${queryString ? `?${queryString}` : ""}` as Route;
 
   return (
-    <Card className="overflow-hidden border-fuga-border transition-shadow hover:shadow-lg">
+    <Card
+      data-testid="search-offer-row"
+      className="overflow-hidden border-fuga-border transition-shadow hover:shadow-lg"
+    >
       <div className="flex flex-col sm:flex-row">
-        <Link href={`/offres/${offer.slug}`} className="group block sm:w-72 sm:shrink-0">
+        <Link href={offerHref} className="group block sm:w-72 sm:shrink-0">
           <div className="relative h-56 sm:h-full">
             <img
               src={offer.image}
@@ -54,7 +60,7 @@ export function SearchOfferRow({ offer, authenticated, favorited }: SearchOfferR
         </Link>
 
         <div className="flex flex-1 flex-col justify-between gap-5 p-5 sm:p-6">
-          <Link href={`/offres/${offer.slug}`} className="block">
+          <Link href={offerHref} className="block">
             <div className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -127,7 +133,7 @@ export function SearchOfferRow({ offer, authenticated, favorited }: SearchOfferR
                 compact
               />
               <Link
-                href={`/offres/${offer.slug}`}
+                href={offerHref}
                 className="inline-flex items-center gap-2 self-end rounded-full bg-fuga-orange px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:bg-fuga-orange/90"
               >
                 Voir l’offre
