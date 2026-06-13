@@ -7,9 +7,24 @@ type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function getErrorMessage(error?: string) {
+  switch (error) {
+    case "Configuration":
+      return "La configuration d'authentification est incomplète. Vérifie le secret et l'URL de prod.";
+    case "AccessDenied":
+      return "Connexion refusée. Vérifie tes identifiants ou réessaie plus tard.";
+    case "CredentialsSignin":
+      return "Email ou mot de passe incorrect.";
+    default:
+      return null;
+  }
+}
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const next = typeof params.next === "string" ? params.next : "/compte";
+  const error = typeof params.error === "string" ? params.error : "";
+  const errorMessage = getErrorMessage(error);
 
   return (
     <>
@@ -26,6 +41,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 Accède à tes réservations, retrouves tes favoris et poursuis la réservation en
                 cours sans perdre le contexte.
               </p>
+              {errorMessage ? (
+                <p className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {errorMessage}
+                </p>
+              ) : null}
             </div>
             <LoginForm nextPath={next} />
             <div className="mt-4 text-center text-sm text-fuga-slate">
